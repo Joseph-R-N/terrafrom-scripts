@@ -1,0 +1,129 @@
+// main.tf file
+
+provider "aws" {
+    region = "us-east-2"
+}
+
+module "ec2dbmodule" {
+    source = "./db"
+    ec2name = "DB Server"
+}
+
+module "ec2webmodule" {
+    source = "./web"
+    ec2webname = "Web Server"
+}
+
+output "DBPrivateIP" {
+  value = module.ec2dbmodule.dbPvtIP
+}
+
+output "WebPublicIP" {
+    value = module.ec2webmodule.pub_ip
+}
+
+// created a db folder for db server and created a db.tf file inside the db folder as follows:
+
+variable "ec2name" {
+  type = string
+}
+
+
+resource "aws_instance" "ec2DB" {
+    ami = "ami-0233c2d874b811deb"
+    instance_type = "t2.micro"
+    tags = {
+        Name = var.ec2name
+    }
+}
+
+output "dbPvtIP" {
+    value = aws_instance.ec2DB.private_ip
+}
+
+// created a web folder for web server and created a web.tf file inside the web folder as follows:
+
+variable "ec2webname" {
+    type = string  
+}
+
+resource "aws_instance" "ec2WEB" {
+    ami = "ami-0233c2d874b811deb"
+    instance_type = "t2.micro"
+    security_groups = [module.sg.sg_name]
+    user_data = file("./web/server-script.sh")
+    tags = {
+        Name = var.ec2webname
+    }  
+}
+
+output "pub_ip" {
+    value = module.eip.WebPubIP
+}
+
+module "eip" {
+    source = "../eip"
+    instance_id = aws_instance.ec2WEB.id
+}
+
+module "sg" {
+    source = "../sg"
+}
+
+// for Elastic IP created a folder called eip and a file eip.tf inside the eip folder as follows:
+
+variable "instance_id" {
+  type = string
+}
+
+resource "aws_eip" "elasticipwebserver" {
+    instance = var.instance_id
+}
+
+output "WebPubIP" {
+    value = aws_eip.elasticipwebserver.public_ip
+}
+
+
+// for Secutity group created a folder called sg and a file sg.tf inside the sg folder as follows:
+
+output "sg_name" {
+  value = aws_security_group.sgwebserver.name
+}
+
+
+resource "aws_security_group" "sgwebserver" {
+    name = "Webtraffic"
+
+    ingress {
+        from_port = 80
+        to_port = 80
+        protocol = "TCP"
+        cidr_blocks = ["0.0.0.0/0"]
+    }  
+
+        egress {
+        from_port = 80
+        to_port = 80
+        protocol = "TCP"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    
+    ingress {
+        from_port = 443
+        to_port = 443
+        protocol = "TCP"
+        cidr_blocks = ["0.0.0.0/0"]
+    }  
+
+        egress {
+        from_port = 443
+        to_port = 443
+        protocol = "TCP"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+}
+
+
+// each change for module, we have to do terraform init to initiate the change before we apply.
