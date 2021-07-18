@@ -1,0 +1,35 @@
+//the main.tf file is as follows:
+
+provider "aws" {
+    region = "us-east-2"
+}
+
+module "db" {
+    source = "./db"
+    server_names = ["mariadb","mysql","mssql"]
+}
+
+
+//after creating a new folder db and a file called db.tf inside the new folder the db.tf file will be as follows:
+
+// a variable with name server_names is created and passed from main.tf
+
+variable "server_names" {
+  type = list(string)
+}
+
+resource "aws_instance" "db" {
+    ami = "ami-0233c2d874b811deb"
+    instance_type = "t2.micro"
+// we use a function same as in java to find the length of array list named server_names. 
+    count = length(var.server_names)
+    tags = {
+// we use the functionality of array and use index to name 3 databases
+        Name = var.server_names[count.index]
+    }
+}
+
+output "dbPvtIP" {
+// we use a star for each count instance. ie. the * represents - aws_instance.db.1.private_ip , aws_instance.db.2.private_ip, aws_instance.db.3.private_ip
+    value = aws_instance.db.*.private_ip
+}
