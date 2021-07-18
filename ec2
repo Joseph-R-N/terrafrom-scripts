@@ -1,0 +1,16 @@
+provider "aws" {
+  region = "us-east-2"
+}
+
+resource "aws_instance" "db" {
+  ami = "ami-0b9064170e32bde34"
+  instance_type = "t2.micro"
+}
+
+resource "aws_instance" "web" {
+  ami = "ami-0b9064170e32bde34"
+  instance_type = "t2.micro"
+  
+  // the below command helps to create dependencies between instances. The web ec2 instance will come up only if db is created. 
+  depends_on = [aws_instance.db]
+}
