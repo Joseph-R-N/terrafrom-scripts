@@ -1,0 +1,16 @@
+provider "aws" {
+    region = "us-east-2"
+}
+
+resource "aws_db_instance" "myRDS" {
+    name = "myDB" // name of the database that will be created inside the myRDS database//
+    identifier = "my-first-rds" // an unique name for instance of RDS Database//
+    instance_class = "db.t2.micro"
+    engine = "mariadb"
+    engine_version = "10.2.21"
+    username = "admin"
+    password = "****" // shoudl not mention the password here. This is a required field.
+    port = 3306
+    allocated_storage = 20 //Min 20GiB is required and Max of 16,384 GiB
+    skip_final_snapshot = true // in console we have option to mention this but in terrform if we do not mention this option then at Destroy, it will try to take a snapstop of the DB
+}
