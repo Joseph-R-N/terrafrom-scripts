@@ -7,6 +7,13 @@ resource "aws_instance" "db" {
   instance_type = "t2.micro"
 }
 
+resource "aws_instance" "ec2" {
+  ami = "ami-0b9064170e32bde34"
+  instance_type = "t2.micro"
+  // an important advanced concept of creating multiple ec2 instances using "count". below it created 3 instances of ec2
+  count = 3
+}
+
 resource "aws_instance" "web" {
   ami = "ami-0b9064170e32bde34"
   instance_type = "t2.micro"
