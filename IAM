@@ -1,0 +1,70 @@
+provider "aws" {
+    region = "us-east-2"
+}
+
+resource "aws_iam_user" "newUser" {
+    name = "joe"
+}
+
+// the below portion after policy = <<EOF is from aws console, you pick all the policies you want to attach and copy the json format for that. 
+
+resource "aws_iam_policy" "customPolicy" {
+    name = "GlacierEFSEC2"  
+
+    policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "elasticfilesystem:DescribeBackupPolicy",
+                "elasticfilesystem:DeleteAccessPoint",
+                "elasticfilesystem:UntagResource",
+                "elasticfilesystem:PutAccountPreferences",
+                "elasticfilesystem:CreateFileSystem",
+                "elasticfilesystem:ListTagsForResource",
+                "glacier:GetVaultAccessPolicy",
+                "glacier:DescribeVault",
+                "elasticfilesystem:ClientWrite",
+                "glacier:GetVaultNotifications",
+                "elasticfilesystem:DeleteTags",
+                "glacier:DescribeJob",
+                "glacier:GetDataRetrievalPolicy",
+                "elasticfilesystem:DescribeLifecycleConfiguration",
+                "elasticfilesystem:ClientMount",
+                "elasticfilesystem:DescribeFileSystemPolicy",
+                "elasticfilesystem:PutLifecycleConfiguration",
+                "elasticfilesystem:DeleteMountTarget",
+                "elasticfilesystem:CreateAccessPoint",
+                "elasticfilesystem:PutFileSystemPolicy",
+                "elasticfilesystem:DeleteFileSystemPolicy",
+                "elasticfilesystem:ModifyMountTargetSecurityGroups",
+                "elasticfilesystem:DescribeMountTargets",
+                "elasticfilesystem:Restore",
+                "glacier:GetJobOutput",
+                "elasticfilesystem:TagResource",
+                "elasticfilesystem:CreateTags",
+                "elasticfilesystem:DescribeTags",
+                "elasticfilesystem:CreateMountTarget",
+                "elasticfilesystem:Backup",
+                "elasticfilesystem:PutBackupPolicy",
+                "elasticfilesystem:ClientRootAccess",
+                "glacier:GetVaultLock",
+                "elasticfilesystem:DeleteFileSystem",
+                "elasticfilesystem:DescribeMountTargetSecurityGroups",
+                "elasticfilesystem:UpdateFileSystem"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+    EOF
+    }
+
+resource "aws_iam_policy_attachment" "policyBind" {
+    name = "attachment"
+    users = [aws_iam_user.newUser.name]  
+    policy_arn = aws_iam_policy.customPolicy.arn
+}
